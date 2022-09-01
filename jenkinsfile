@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    stages {
+                  stage('verify') {
+                    steps {
+                     git([url: 'https://github.com/kirtisen/Dockerfile.git', branch: 'main'])
+                     sh 'ls -lhtr'
+                     sh 'pwd'
+                     sh 'docker --version'
+                     sh 'docker images'
+                     sh 'docker ps'
+        }
+    }
+                  stage('Build') {
+                   steps {
+                   sh 'docker build -t kirtisen/my-repo:tagname .'
+            }
+                }
+                stage('Docker test') {
+                   steps {
+                   sh 'docker run -d -p 8099:80  kirtisen/my-repo:tagname'
+                 
+            }
+                }
+                stage('Docker Push') {
+                   steps {
+                   withCredentials([usernamePassword(credentialsId: 'jenkins', passwordVariable: 'pass', usernameVariable: 'user')]) {
+                    sh 'echo $pass'
+                    sh 'echo ${pass}'
+                   sh "docker login -u ${user} -p ${pass}"
+                   sh 'docker push kirtisen/my-repo:tagname'
+        }
+    }
+}
+}
+}
